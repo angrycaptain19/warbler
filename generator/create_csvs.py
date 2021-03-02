@@ -5,6 +5,7 @@ files that this generates. You should only need to run this if you wanted to
 tweak the CSV formats or generate fewer/more rows.
 """
 
+
 import csv
 from random import choice, randint, sample
 from itertools import permutations
@@ -58,7 +59,7 @@ with open('generator/messages.csv', 'w') as messages_csv:
     messages_writer = csv.DictWriter(messages_csv, fieldnames=MESSAGES_CSV_HEADERS)
     messages_writer.writeheader()
 
-    for i in range(NUM_MESSAGES):
+    for _ in range(NUM_MESSAGES):
         messages_writer.writerow(dict(
             text=fake.paragraph()[:MAX_WARBLER_LENGTH],
             timestamp=get_random_datetime(),

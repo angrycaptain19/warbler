@@ -67,26 +67,25 @@ def signup():
     """
 
     form = UserAddForm()
-    if form.validate_on_submit():
-        try:
-            user = User.signup(
-                username=form.username.data,
-                password=form.password.data,
-                email=form.email.data,
-                image_url=form.image_url.data or User.image_url.default.arg,
-            )
-            db.session.commit()
-
-        except IntegrityError:
-            flash("Username already taken", 'danger')
-            return render_template('users/signup.html', form=form)
-
-        do_login(user)
-
-        return redirect("/")
-
-    else:
+    if not form.validate_on_submit():
         return render_template('users/signup.html', form=form)
+
+    try:
+        user = User.signup(
+            username=form.username.data,
+            password=form.password.data,
+            email=form.email.data,
+            image_url=form.image_url.data or User.image_url.default.arg,
+        )
+        db.session.commit()
+
+    except IntegrityError:
+        flash("Username already taken", 'danger')
+        return render_template('users/signup.html', form=form)
+
+    do_login(user)
+
+    return redirect("/")
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -228,32 +227,31 @@ def profile():
 
     form = UserUpdateForm(obj=g.user)
 
-    if form.validate_on_submit():
-        # check if password submitted on form is user's correct password
-        if not g.user.authenticate(
-            g.user.username, 
-            form.password.data):
-
-            flash("Invalid Password", "danger")
-            return render_template(
-                'users/edit.html',
-                user=g.user,
-                form=form)
-
-        g.user.username = form.username.data
-        g.user.email = form.email.data
-        g.user.image_url = form.image_url.data
-        g.user.header_image_url = form.header_image_url.data
-        g.user.bio = form.bio.data
-
-        db.session.commit()
-        return redirect(f'/users/{g.user.id}')
-
-    else:    
+    if not form.validate_on_submit():    
         return render_template(
             'users/edit.html',
             user=g.user,
             form=form)
+
+    # check if password submitted on form is user's correct password
+    if not g.user.authenticate(
+        g.user.username, 
+        form.password.data):
+
+        flash("Invalid Password", "danger")
+        return render_template(
+            'users/edit.html',
+            user=g.user,
+            form=form)
+
+    g.user.username = form.username.data
+    g.user.email = form.email.data
+    g.user.image_url = form.image_url.data
+    g.user.header_image_url = form.header_image_url.data
+    g.user.bio = form.bio.data
+
+    db.session.commit()
+    return redirect(f'/users/{g.user.id}')
     
 
 @app.route('/users/delete', methods=["POST"])
